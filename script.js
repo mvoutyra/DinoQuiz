@@ -38,7 +38,7 @@ const speak = (text) => {
   if (selectedVoice) {
     utterance.voice = selectedVoice;
   } else {
-    alert("⚠️ Δεν βρέθηκε γυναικεία φωνή στα ελληνικά. Θα χρησιμοποιηθεί η προεπιλεγμένη φωνή.");
+    console.warn("⚠️ Δεν βρέθηκε γυναικεία φωνή στα ελληνικά.");
   }
   window.speechSynthesis.speak(utterance);
 };
@@ -92,11 +92,24 @@ const showQuestion = () => {
   });
 };
 
-document.getElementById("startBtn").addEventListener("click", async () => {
+const quiz = document.getElementById("quiz");
+const startBtn = document.createElement("button");
+startBtn.id = "startBtn";
+startBtn.textContent = "Ξεκινάμε!";
+startBtn.style.fontSize = "1.5em";
+startBtn.style.padding = "15px 30px";
+startBtn.style.marginTop = "40px";
+startBtn.style.borderRadius = "10px";
+startBtn.style.border = "none";
+startBtn.style.cursor = "pointer";
+
+startBtn.addEventListener("click", async () => {
   current = 0;
   score = 0;
   await selectVoice();
   showQuestion();
 });
+
+quiz.appendChild(startBtn);
 
 });

@@ -2,7 +2,7 @@
 const questions = [
   {
     text: "Ποιος είχε τρία κέρατα στο κεφάλι;",
-    image: "https://cdn.pixabay.com/photo/2016/12/06/18/27/dinosaur-1880838_960_720.jpg",
+    image: "https://images.unsplash.com/photo-1608451643043-3cddc3f7b87f?auto=format&fit=crop&w=900&q=60",
     options: [
       { color: "red", label: "Τρικεράτοπας", correct: true },
       { color: "green", label: "Στεγόσαυρος", correct: false },
@@ -11,7 +11,7 @@ const questions = [
   },
   {
     text: "Ποιος είχε τεράστια δόντια;",
-    image: "https://cdn.pixabay.com/photo/2020/03/01/21/25/tyrannosaurus-4894392_960_720.jpg",
+    image: "https://images.unsplash.com/photo-1601221203023-57e31847fbc0?auto=format&fit=crop&w=900&q=60",
     options: [
       { color: "green", label: "Τυραννόσαυρος Ρεξ", correct: true },
       { color: "red", label: "Τρικεράτοπας", correct: false },
@@ -33,7 +33,11 @@ const colorToGreek = {
 const speak = (text) => {
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "el-GR";
-  if (selectedVoice) utterance.voice = selectedVoice;
+  if (selectedVoice) {
+    utterance.voice = selectedVoice;
+  } else {
+    alert("⚠️ Δεν βρέθηκε γυναικεία φωνή στα ελληνικά. Θα χρησιμοποιηθεί η προεπιλεγμένη φωνή.");
+  }
   window.speechSynthesis.speak(utterance);
 };
 

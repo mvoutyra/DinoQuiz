@@ -1,4 +1,6 @@
 
+window.addEventListener("DOMContentLoaded", () => {
+
 const questions = [
   {
     text: "Ποιος είχε τρία κέρατα στο κεφάλι;",
@@ -95,4 +97,6 @@ document.getElementById("startBtn").addEventListener("click", async () => {
   score = 0;
   await selectVoice();
   showQuestion();
+});
+
 });

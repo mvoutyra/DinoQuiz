@@ -2,7 +2,7 @@
 const questions = [
   {
     text: "Ποιος είχε τρία κέρατα στο κεφάλι;",
-    image: "https://upload.wikimedia.org/wikipedia/commons/f/f7/Triceratops_BW.jpg",
+    image: "https://cdn.pixabay.com/photo/2016/12/06/18/27/dinosaur-1880838_960_720.jpg",
     options: [
       { color: "red", label: "Τρικεράτοπας", correct: true },
       { color: "green", label: "Στεγόσαυρος", correct: false },
@@ -11,7 +11,7 @@ const questions = [
   },
   {
     text: "Ποιος είχε τεράστια δόντια;",
-    image: "https://upload.wikimedia.org/wikipedia/commons/5/56/Tyrannosaurus_Rex_Holotype.jpg",
+    image: "https://cdn.pixabay.com/photo/2020/03/01/21/25/tyrannosaurus-4894392_960_720.jpg",
     options: [
       { color: "green", label: "Τυραννόσαυρος Ρεξ", correct: true },
       { color: "red", label: "Τρικεράτοπας", correct: false },
@@ -38,9 +38,20 @@ const speak = (text) => {
 };
 
 const selectVoice = () => {
-  const voices = window.speechSynthesis.getVoices();
-  selectedVoice = voices.find(v => v.lang === "el-GR" && /female|γυν/i.test(v.name)) ||
-                  voices.find(v => v.lang === "el-GR");
+  return new Promise((resolve) => {
+    const loadVoices = () => {
+      const voices = window.speechSynthesis.getVoices();
+      selectedVoice = voices.find(v => v.lang === "el-GR" && /female|γυν/i.test(v.name)) ||
+                      voices.find(v => v.lang === "el-GR");
+      resolve();
+    };
+
+    if (window.speechSynthesis.getVoices().length > 0) {
+      loadVoices();
+    } else {
+      window.speechSynthesis.addEventListener("voiceschanged", loadVoices);
+    }
+  });
 };
 
 const showQuestion = () => {
@@ -75,9 +86,9 @@ const showQuestion = () => {
   });
 };
 
-document.getElementById("startBtn").addEventListener("click", () => {
+document.getElementById("startBtn").addEventListener("click", async () => {
   current = 0;
   score = 0;
-  selectVoice();
+  await selectVoice();
   showQuestion();
 });

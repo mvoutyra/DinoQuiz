@@ -22,14 +22,7 @@ const questions = [
 
 let current = 0;
 let score = 0;
-
-const quiz = document.getElementById("quiz");
-
-const speak = (text) => {
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = "el-GR";
-  window.speechSynthesis.speak(utterance);
-};
+let selectedVoice = null;
 
 const colorToGreek = {
   red: "κόκκινο",
@@ -37,10 +30,23 @@ const colorToGreek = {
   yellow: "κίτρινο"
 };
 
+const speak = (text) => {
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "el-GR";
+  if (selectedVoice) utterance.voice = selectedVoice;
+  window.speechSynthesis.speak(utterance);
+};
+
+const selectVoice = () => {
+  const voices = window.speechSynthesis.getVoices();
+  selectedVoice = voices.find(v => v.lang === "el-GR" && /female|γυν/i.test(v.name)) ||
+                  voices.find(v => v.lang === "el-GR");
+};
+
 const showQuestion = () => {
   const q = questions[current];
   quiz.innerHTML = `
-    <div id="image" style="background-image: url('${q.image}');"></div>
+    <img id="dinoImg" src="${q.image}" alt="Εικόνα Δεινόσαυρου" />
     <div class="question">${q.text}</div>
     <div class="answers">
       ${q.options.map(opt => `<button class="answer ${opt.color}" data-correct="${opt.correct}">${opt.label}</button>`).join('')}
@@ -72,5 +78,6 @@ const showQuestion = () => {
 document.getElementById("startBtn").addEventListener("click", () => {
   current = 0;
   score = 0;
+  selectVoice();
   showQuestion();
 });

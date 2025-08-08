@@ -1,0 +1,95 @@
+
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DinoQuiz</title>
+  <style>
+    body { margin: 0; font-family: sans-serif; background: #0f172a; color: white; text-align: center; padding: 20px; }
+    h1 { font-size: 2em; margin-top: 20px; }
+    .question { font-size: 1.5em; margin: 20px 0; }
+    .answers { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+    .answer { padding: 20px; border-radius: 10px; font-size: 1.2em; cursor: pointer; border: none; color: black; }
+    .red { background-color: red; }
+    .green { background-color: greenyellow; }
+    .yellow { background-color: yellow; }
+    #startBtn { font-size: 1.5em; padding: 15px 30px; margin-top: 40px; border-radius: 10px; border: none; cursor: pointer; }
+    #image { width: 200px; height: 150px; margin: 10px auto; background-size: cover; background-position: center; border-radius: 12px; }
+  </style>
+</head>
+<body>
+  <h1>🦕 DinoQuiz</h1>
+  <div id="quiz">
+    <button id="startBtn">Ξεκινάμε!</button>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        text: "Ποιος είχε τρία κέρατα στο κεφάλι;",
+        options: [
+          { color: "red", label: "Τρικεράτοπας", correct: true },
+          { color: "green", label: "Στεγόσαυρος", correct: false },
+          { color: "yellow", label: "Βραχιόσαυρος", correct: false }
+        ]
+      },
+      {
+        text: "Ποιος είχε τεράστια δόντια;",
+        options: [
+          { color: "green", label: "Τυραννόσαυρος Ρεξ", correct: true },
+          { color: "red", label: "Τρικεράτοπας", correct: false },
+          { color: "yellow", label: "Σπινόσαυρος", correct: false }
+        ]
+      }
+      // Μπορούν να προστεθούν εδώ έως 20 ερωτήσεις συνολικά
+    ];
+
+    let current = 0;
+    let score = 0;
+
+    const quiz = document.getElementById("quiz");
+
+    const speak = (text) => {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "el-GR";
+      window.speechSynthesis.speak(utterance);
+    };
+
+    const showQuestion = () => {
+      const q = questions[current];
+      quiz.innerHTML = \`
+        <div id="image" style="background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA...');"></div>
+        <div class="question">\${q.text}</div>
+        <div class="answers">
+          \${q.options.map(opt => \`<button class="answer \${opt.color}" onclick="answer(\${opt.correct})">\${opt.label}</button>\`).join('')}
+        </div>
+      \`;
+      speak(q.text + '. ' + q.options.map(o => o.color + ': ' + o.label).join(', '));
+    };
+
+    window.answer = (isCorrect) => {
+      if (isCorrect) {
+        speak("Μπράβο!");
+        score++;
+      } else {
+        speak("Όχι, δοκίμασε ξανά!");
+        return;
+      }
+      current++;
+      if (current < questions.length) {
+        setTimeout(showQuestion, 1000);
+      } else {
+        quiz.innerHTML = \`<h2>Τέλος! Σωστές απαντήσεις: \${score} / \${questions.length}</h2>\`;
+        speak("Μπράβο! Τέλος παιχνιδιού.");
+      }
+    };
+
+    document.getElementById("startBtn").onclick = () => {
+      current = 0;
+      score = 0;
+      showQuestion();
+    };
+  </script>
+</body>
+</html>

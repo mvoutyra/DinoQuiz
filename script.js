@@ -2,6 +2,7 @@
 const questions = [
   {
     text: "Ποιος είχε τρία κέρατα στο κεφάλι;",
+    image: "https://upload.wikimedia.org/wikipedia/commons/f/f7/Triceratops_BW.jpg",
     options: [
       { color: "red", label: "Τρικεράτοπας", correct: true },
       { color: "green", label: "Στεγόσαυρος", correct: false },
@@ -10,6 +11,7 @@ const questions = [
   },
   {
     text: "Ποιος είχε τεράστια δόντια;",
+    image: "https://upload.wikimedia.org/wikipedia/commons/5/56/Tyrannosaurus_Rex_Holotype.jpg",
     options: [
       { color: "green", label: "Τυραννόσαυρος Ρεξ", correct: true },
       { color: "red", label: "Τρικεράτοπας", correct: false },
@@ -29,17 +31,23 @@ const speak = (text) => {
   window.speechSynthesis.speak(utterance);
 };
 
+const colorToGreek = {
+  red: "κόκκινο",
+  green: "πράσινο",
+  yellow: "κίτρινο"
+};
+
 const showQuestion = () => {
   const q = questions[current];
   quiz.innerHTML = `
-    <div id="image" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/1/11/Dino_icon.png');"></div>
+    <div id="image" style="background-image: url('${q.image}');"></div>
     <div class="question">${q.text}</div>
     <div class="answers">
       ${q.options.map(opt => `<button class="answer ${opt.color}" data-correct="${opt.correct}">${opt.label}</button>`).join('')}
     </div>
   `;
 
-  speak(q.text + '. ' + q.options.map(o => o.color + ': ' + o.label).join(', '));
+  speak(q.text + '. ' + q.options.map(o => colorToGreek[o.color] + ': ' + o.label).join(', '));
 
   document.querySelectorAll('.answer').forEach(btn => {
     btn.addEventListener('click', () => {

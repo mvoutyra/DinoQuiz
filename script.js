@@ -1,5 +1,13 @@
+// DinoQuiz – Φωνητική εκφώνηση με πιο «παιδικό» τόνο μέσω pitch/rate
+// Αν ο browser έχει περισσότερες φωνές, μπορείς να διαλέξεις από το dropdown.
+
 const colorToGreek = { red: "κόκκινο", green: "πράσινο", yellow: "κίτρινο" };
 
+// ΠΑΡΑΜΕΤΡΟΙ ΦΩΝΗΣ
+const PITCH = 1.4;   // πιο «γλυκιά»/παιδική χροιά
+const RATE  = 0.95;  // λίγο πιο αργό για καθαρότητα
+
+// 20 ερωτήσεις με placeholders εικόνων
 const quiz = [
   { question: "Ποιος πέταγε στον ουρανό;", image: "image1.jpg",
     options: [
@@ -125,18 +133,61 @@ const quiz = [
 
 let current = 0;
 let selectedVoice = null;
+let voicesList = [];
 
-function pickVoice() {
-  const voices = window.speechSynthesis.getVoices();
-  selectedVoice =
-    voices.find(v => v.lang === "el-GR" && /female|γυν/i.test(v.name)) ||
-    voices.find(v => v.lang === "el-GR") || null;
+// Helpers για στοιχεία DOM
+const voiceSelectEl = () => document.getElementById("voiceSelect");
+
+function loadVoices() {
+  voicesList = window.speechSynthesis.getVoices();
+  const greek = voicesList.filter(v => (v.lang || "").toLowerCase().startsWith("el"));
+
+  const sel = voiceSelectEl();
+  if (!sel) return;
+  sel.innerHTML = "";
+
+  const list = greek.length ? greek : voicesList;
+  list.forEach(v => {
+    const opt = document.createElement("option");
+    opt.value = v.name;
+    opt.textContent = `${v.name} (${v.lang})`;
+    sel.appendChild(opt);
+  });
+
+  const savedName = localStorage.getItem("dinoquiz.voiceName");
+  if (savedName && list.find(v => v.name === savedName)) {
+    sel.value = savedName;
+  }
+
+  selectedVoice = list.find(v => v.name === sel.value) || list[0] || null;
+}
+
+function attachVoiceHandlers() {
+  const sel = voiceSelectEl();
+  if (sel) {
+    sel.addEventListener("change", () => {
+      const chosen = voicesList.find(v => v.name === sel.value);
+      if (chosen) {
+        selectedVoice = chosen;
+        localStorage.setItem("dinoquiz.voiceName", chosen.name);
+      }
+    });
+  }
+  const testBtn = document.getElementById("testVoice");
+  if (testBtn) {
+    testBtn.addEventListener("click", () => {
+      speak("Γεια σου! Ας παίξουμε με τους δεινόσαυρους!");
+    });
+  }
 }
 
 function speak(text) {
   const u = new SpeechSynthesisUtterance(text);
   u.lang = "el-GR";
+  u.pitch = PITCH;
+  u.rate  = RATE;
   if (selectedVoice) u.voice = selectedVoice;
+  window.speechSynthesis.cancel();
   window.speechSynthesis.speak(u);
 }
 
@@ -151,7 +202,7 @@ function shuffle(arr) {
 function renderQuestion() {
   const q = quiz[current];
   const img = document.getElementById("dinoImg");
-  img.src = q.image; // θα «σπάει» μέχρι να μπουν τα αρχεία imageX.jpg (αναμενόμενο)
+  img.src = q.image; // θα «σπάει» μέχρι να μπουν τα αρχεία imageX.jpg
   img.alt = "Εικόνα: " + q.image;
 
   const qEl = document.getElementById("question");
@@ -171,7 +222,8 @@ function renderQuestion() {
     answersEl.appendChild(btn);
   });
 
-  const spoken = q.question + ". " + shuffled.map(o => `${( {red:'κόκκινο',green:'πράσινο',yellow:'κίτρινο'} )[o.color]||o.color}: ${o.label}`).join(", ");
+  const colorName = c => ({red:"κόκκινο", green:"πράσινο", yellow:"κίτρινο"})[c] || c;
+  const spoken = q.question + ". " + shuffled.map(o => `${colorName(o.color)}: ${o.label}`).join(", ");
   speak(spoken);
 }
 
@@ -181,8 +233,11 @@ function nextQuestion() {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
-  if (window.speechSynthesis.getVoices().length) pickVoice();
-  else window.speechSynthesis.addEventListener("voiceschanged", pickVoice, { once:true });
+  // Φόρτωση φωνών: σε κάποιους browsers έρχονται ασύγχρονα
+  if (window.speechSynthesis.getVoices().length) loadVoices();
+  window.speechSynthesis.addEventListener("voiceschanged", loadVoices);
+  attachVoiceHandlers();
+
   renderQuestion();
   document.getElementById("nextBtn").addEventListener("click", nextQuestion);
 });

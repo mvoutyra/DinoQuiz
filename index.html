@@ -9,6 +9,14 @@
 <body>
   <main class="app">
     <h1>🦕 DinoQuiz</h1>
+
+    <!-- ΦΩΝΗ: Επιλογέας & δοκιμή -->
+    <div class="toolbar" style="margin:10px 0 16px; display:flex; gap:8px; justify-content:center; align-items:center;">
+      <label for="voiceSelect">🎙️ Φωνή:</label>
+      <select id="voiceSelect"></select>
+      <button id="testVoice" class="next" type="button">Δοκιμή φωνής</button>
+    </div>
+
     <div class="question-box">
       <div class="image-wrap">
         <img id="dinoImg" alt="Εικόνα ερώτησης (πιθανώς δεν υπάρχει ακόμη)" />

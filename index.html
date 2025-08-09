@@ -5,19 +5,51 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>DinoQuiz</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    .hidden { display:none; }
+    .toolbar, .sliders { 
+      margin:10px 0 16px; 
+      display:flex; 
+      gap:10px; 
+      justify-content:center; 
+      align-items:center; 
+      flex-wrap: wrap;
+    }
+    .sliders label { min-width: 90px; text-align: right; }
+    .card { background: var(--card, #111827); color: var(--text, #fff); padding:16px; border-radius:16px; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+    .start-btn { padding: 12px 16px; border:0; border-radius: 10px; background:#22c55e; color:#fff; font-size: 16px; cursor:pointer; }
+  </style>
 </head>
 <body>
   <main class="app">
     <h1>🦕 DinoQuiz</h1>
 
-    <!-- ΦΩΝΗ: Επιλογέας & δοκιμή -->
-    <div class="toolbar" style="margin:10px 0 16px; display:flex; gap:8px; justify-content:center; align-items:center;">
-      <label for="voiceSelect">🎙️ Φωνή:</label>
-      <select id="voiceSelect"></select>
-      <button id="testVoice" class="next" type="button">Δοκιμή φωνής</button>
-    </div>
+    <!-- Αρχική οθόνη με επιλογές φωνής & sliders -->
+    <section id="startScreen" class="card">
+      <p style="margin-top:0">Ρυθμίσεις φωνής (προαιρετικά) και έναρξη παιχνιδιού.</p>
+      <div class="toolbar">
+        <label for="voiceSelect">🎙️ Φωνή:</label>
+        <select id="voiceSelect"></select>
+        <button id="testVoice" class="next" type="button">Δοκιμή φωνής</button>
+      </div>
+      <div class="sliders">
+        <label for="pitchSlider">Pitch:</label>
+        <input id="pitchSlider" type="range" min="0.5" max="2" step="0.05">
+        <span id="pitchVal"></span>
+      </div>
+      <div class="sliders">
+        <label for="rateSlider">Ταχύτητα:</label>
+        <input id="rateSlider" type="range" min="0.6" max="1.4" step="0.05">
+        <span id="rateVal"></span>
+      </div>
+      <div style="margin-top:12px">
+        <button id="startBtn" class="start-btn" type="button">Ξεκινάμε!</button>
+      </div>
+      <p class="hint">💡 Με το κουμπί «Ξεκινάμε!» ο ήχος επιτρέπεται από τον browser και θα ακούγεται σωστά από την πρώτη ερώτηση.</p>
+    </section>
 
-    <div class="question-box">
+    <!-- Περιοχή κουίζ -->
+    <section id="quizScreen" class="question-box hidden">
       <div class="image-wrap">
         <img id="dinoImg" alt="Εικόνα ερώτησης (πιθανώς δεν υπάρχει ακόμη)" />
       </div>
@@ -26,7 +58,8 @@
       <div class="controls">
         <button id="nextBtn" class="next">Επόμενη</button>
       </div>
-    </div>
+    </section>
+
     <p class="hint">💡 Για να εμφανιστούν οι εικόνες, βάλτε αρχεία <code>image1.jpg</code> έως <code>image20.jpg</code> στον ίδιο φάκελο.</p>
   </main>
   <script src="script.js"></script>

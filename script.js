@@ -1,11 +1,16 @@
-// DinoQuiz – Φωνητική εκφώνηση με πιο «παιδικό» τόνο μέσω pitch/rate
-// Αν ο browser έχει περισσότερες φωνές, μπορείς να διαλέξεις από το dropdown.
+// DinoQuiz – Αρχική οθόνη με 'Ξεκινάμε!' για να δουλέψει η εκφώνηση από την πρώτη ερώτηση.
+// Pitch/Rate sliders + επιλογέας φωνής (αποθήκευση σε localStorage).
 
 const colorToGreek = { red: "κόκκινο", green: "πράσινο", yellow: "κίτρινο" };
 
-// ΠΑΡΑΜΕΤΡΟΙ ΦΩΝΗΣ
-const PITCH = 1.4;   // πιο «γλυκιά»/παιδική χροιά
-const RATE  = 0.95;  // λίγο πιο αργό για καθαρότητα
+// Προεπιλογές (θα διαβάζονται/γράφονται στο localStorage)
+let PITCH = parseFloat(localStorage.getItem("dinoquiz.pitch") || "1.4");
+let RATE  = parseFloat(localStorage.getItem("dinoquiz.rate")  || "0.95");
+
+let current = 0;
+let selectedVoice = null;
+let voicesList = [];
+let userInteracted = false;
 
 // 20 ερωτήσεις με placeholders εικόνων
 const quiz = [
@@ -131,40 +136,27 @@ const quiz = [
     ]},
 ];
 
-let current = 0;
-let selectedVoice = null;
-let voicesList = [];
-
-// Helpers για στοιχεία DOM
-const voiceSelectEl = () => document.getElementById("voiceSelect");
+// Helpers για DOM
+const $ = s => document.querySelector(s);
 
 function loadVoices() {
+  const sel = $("#voiceSelect");
   voicesList = window.speechSynthesis.getVoices();
   const greek = voicesList.filter(v => (v.lang || "").toLowerCase().startsWith("el"));
 
-  const sel = voiceSelectEl();
-  if (!sel) return;
-  sel.innerHTML = "";
-
-  const list = greek.length ? greek : voicesList;
-  list.forEach(v => {
-    const opt = document.createElement("option");
-    opt.value = v.name;
-    opt.textContent = `${v.name} (${v.lang})`;
-    sel.appendChild(opt);
-  });
-
-  const savedName = localStorage.getItem("dinoquiz.voiceName");
-  if (savedName && list.find(v => v.name === savedName)) {
-    sel.value = savedName;
-  }
-
-  selectedVoice = list.find(v => v.name === sel.value) || list[0] || null;
-}
-
-function attachVoiceHandlers() {
-  const sel = voiceSelectEl();
   if (sel) {
+    sel.innerHTML = "";
+    const list = greek.length ? greek : voicesList;
+    list.forEach(v => {
+      const opt = document.createElement("option");
+      opt.value = v.name;
+      opt.textContent = `${v.name} (${v.lang})`;
+      sel.appendChild(opt);
+    });
+    const savedName = localStorage.getItem("dinoquiz.voiceName");
+    if (savedName && list.find(v => v.name === savedName)) sel.value = savedName;
+    selectedVoice = list.find(v => v.name === sel.value) || list[0] || null;
+
     sel.addEventListener("change", () => {
       const chosen = voicesList.find(v => v.name === sel.value);
       if (chosen) {
@@ -173,15 +165,10 @@ function attachVoiceHandlers() {
       }
     });
   }
-  const testBtn = document.getElementById("testVoice");
-  if (testBtn) {
-    testBtn.addEventListener("click", () => {
-      speak("Γεια σου! Ας παίξουμε με τους δεινόσαυρους!");
-    });
-  }
 }
 
 function speak(text) {
+  if (!userInteracted) return; // μέχρι να πατηθεί κουμπί, δεν κάνουμε speak (autoplay policy)
   const u = new SpeechSynthesisUtterance(text);
   u.lang = "el-GR";
   u.pitch = PITCH;
@@ -201,14 +188,13 @@ function shuffle(arr) {
 
 function renderQuestion() {
   const q = quiz[current];
-  const img = document.getElementById("dinoImg");
-  img.src = q.image; // θα «σπάει» μέχρι να μπουν τα αρχεία imageX.jpg
+  const img = $("#dinoImg");
+  img.src = q.image; // θα «σπάει» μέχρι να μπουν τα αρχεία
   img.alt = "Εικόνα: " + q.image;
 
-  const qEl = document.getElementById("question");
-  qEl.textContent = q.question;
+  $("#question").textContent = q.question;
 
-  const answersEl = document.getElementById("answers");
+  const answersEl = $("#answers");
   answersEl.innerHTML = "";
   const shuffled = shuffle(q.options.map(o => ({...o})));
   shuffled.forEach(opt => {
@@ -232,12 +218,57 @@ function nextQuestion() {
   renderQuestion();
 }
 
+// Αρχικό setup
 window.addEventListener("DOMContentLoaded", () => {
-  // Φόρτωση φωνών: σε κάποιους browsers έρχονται ασύγχρονα
+  // 1) Ρύθμιση sliders από/σε localStorage
+  const pitchSlider = $("#pitchSlider");
+  const rateSlider  = $("#rateSlider");
+  const pitchVal = $("#pitchVal");
+  const rateVal  = $("#rateVal");
+  if (pitchSlider && rateSlider) {
+    pitchSlider.value = String(PITCH);
+    rateSlider.value  = String(RATE);
+    if (pitchVal) pitchVal.textContent = PITCH.toFixed(2);
+    if (rateVal)  rateVal.textContent  = RATE.toFixed(2);
+    pitchSlider.addEventListener("input", () => {
+      PITCH = parseFloat(pitchSlider.value);
+      localStorage.setItem("dinoquiz.pitch", String(PITCH));
+      if (pitchVal) pitchVal.textContent = PITCH.toFixed(2);
+    });
+    rateSlider.addEventListener("input", () => {
+      RATE = parseFloat(rateSlider.value);
+      localStorage.setItem("dinoquiz.rate", String(RATE));
+      if (rateVal) rateVal.textContent = RATE.toFixed(2);
+    });
+  }
+
+  // 2) Φόρτωση φωνών (μερικές φορές έρχονται αργότερα)
   if (window.speechSynthesis.getVoices().length) loadVoices();
   window.speechSynthesis.addEventListener("voiceschanged", loadVoices);
-  attachVoiceHandlers();
 
-  renderQuestion();
-  document.getElementById("nextBtn").addEventListener("click", nextQuestion);
+  // 3) Κουμπί δοκιμής φωνής (μετράει ως user gesture)
+  const testBtn = $("#testVoice");
+  if (testBtn) {
+    testBtn.addEventListener("click", () => {
+      userInteracted = true;
+      speak("Γεια σου! Ας παίξουμε με τους δεινόσαυρους!");
+    });
+  }
+
+  // 4) Κουμπί έναρξης: κρύβει το startScreen, δείχνει το quiz, αποδίδει την πρώτη ερώτηση & εκφώνηση
+  const startBtn = $("#startBtn");
+  if (startBtn) {
+    startBtn.addEventListener("click", () => {
+      userInteracted = true; // δίνει δικαίωμα για ήχο
+      $("#startScreen").classList.add("hidden");
+      $("#quizScreen").classList.remove("hidden");
+
+      // Επέλεξε φωνή με προτίμηση ελληνικών, αν δεν έχει οριστεί
+      if (!selectedVoice) loadVoices();
+
+      current = 0;
+      renderQuestion();
+      $("#nextBtn").addEventListener("click", nextQuestion);
+    });
+  }
 });

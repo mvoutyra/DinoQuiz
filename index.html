@@ -1,1 +1,26 @@
-<html><body><h1>DinoQuiz</h1></body></html>
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DinoQuiz</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <h1>🦕 DinoQuiz</h1>
+    <div class="question-box">
+      <div class="image-wrap">
+        <img id="dinoImg" alt="Εικόνα ερώτησης (πιθανώς δεν υπάρχει ακόμη)" />
+      </div>
+      <div id="question" class="question">Ερώτηση…</div>
+      <div id="answers" class="answers"></div>
+      <div class="controls">
+        <button id="nextBtn" class="next">Επόμενη</button>
+      </div>
+    </div>
+    <p class="hint">💡 Για να εμφανιστούν οι εικόνες, βάλτε αρχεία <code>image1.jpg</code> έως <code>image20.jpg</code> στον ίδιο φάκελο.</p>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
